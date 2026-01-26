@@ -3,9 +3,9 @@ package ru.hrp.core;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.hrp.config.ConfigManager;
 import ru.hrp.config.ConfigService;
+import ru.hrp.player.PlayerDataManager;
+import ru.hrp.player.PlayerDataService;
 import ru.hrp.player.PlayerListener;
-import ru.hrp.player.PlayerManager;
-import ru.hrp.player.PlayerService;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -14,7 +14,7 @@ public final class HRPCore extends JavaPlugin {
     private ConfigService configService;
     private DatabaseService databaseService;
     private MessageService messageService;
-    private PlayerService playerService;
+    private PlayerDataService playerDataService;
 
     @Override
     public void onEnable() {
@@ -30,11 +30,11 @@ public final class HRPCore extends JavaPlugin {
             // 3. Initialize Message Service
             this.messageService = new MessageManager(configService);
 
-            // 4. Initialize Player Service
-            this.playerService = new PlayerManager(this, databaseService, messageService);
+            // 4. Initialize Player Data Service
+            this.playerDataService = new PlayerDataManager(this, databaseService);
 
             // 5. Register Listeners
-            getServer().getPluginManager().registerEvents(new PlayerListener(playerService), this);
+            getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
         } catch (SQLException e) {
@@ -66,7 +66,7 @@ public final class HRPCore extends JavaPlugin {
         return messageService;
     }
 
-    public PlayerService getPlayerService() {
-        return playerService;
+    public PlayerDataService getPlayerDataService() {
+        return playerDataService;
     }
 }
