@@ -1,0 +1,10 @@
+# HRPCore Messages (MiniMessage format)
+prefix: "<gray>[<gold>HRP</gold><gray>]</gray> "
+
+player:
+  join: "<green>Welcome back, <yellow><player_name></yellow>!</green>"
+  first_join: "<green>Welcome to the server, <yellow><player_name></yellow>!</green>"
+
+errors:
+  no_permission: "<red>You do not have permission to do this!</red>"
+  only_players: "<red>Only players can execute this command!</red>"

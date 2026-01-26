@@ -1,0 +1,6 @@
+# HRPCore Configuration
+database:
+  file: "database.db"
+
+# Debug mode
+debug: false

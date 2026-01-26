@@ -1,0 +1,8 @@
+name: HRPCore
+version: '${version}'
+main: ru.hrp.core.HRPCore
+api-version: '1.21'
+depend: [Vault]
+softdepend: [PlaceholderAPI]
+authors: [HRPCoreTeam]
+description: A modular Minecraft Paper plugin.
