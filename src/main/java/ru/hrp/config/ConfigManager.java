@@ -16,15 +16,18 @@ public class ConfigManager implements ConfigService {
     private FileConfiguration config;
     private FileConfiguration messages;
     private FileConfiguration roles;
+    private FileConfiguration abilities;
     private File configFile;
     private File messagesFile;
     private File rolesFile;
+    private File abilitiesFile;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.configFile = new File(plugin.getDataFolder(), "config.yml");
         this.messagesFile = new File(plugin.getDataFolder(), "messages.yml");
         this.rolesFile = new File(plugin.getDataFolder(), "roles.yml");
+        this.abilitiesFile = new File(plugin.getDataFolder(), "abilities.yml");
     }
 
     @Override
@@ -36,10 +39,12 @@ public class ConfigManager implements ConfigService {
         saveDefaultConfig("config.yml");
         saveDefaultConfig("messages.yml");
         saveDefaultConfig("roles.yml");
+        saveDefaultConfig("abilities.yml");
 
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         roles = YamlConfiguration.loadConfiguration(rolesFile);
+        abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
 
         loadDefaults("messages.yml", messages);
     }
@@ -63,6 +68,7 @@ public class ConfigManager implements ConfigService {
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         roles = YamlConfiguration.loadConfiguration(rolesFile);
+        abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
     }
 
     @Override
@@ -78,5 +84,10 @@ public class ConfigManager implements ConfigService {
     @Override
     public FileConfiguration getRoles() {
         return roles;
+    }
+
+    @Override
+    public FileConfiguration getAbilities() {
+        return abilities;
     }
 }

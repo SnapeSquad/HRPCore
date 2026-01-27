@@ -28,6 +28,11 @@ public interface RoleService {
     RoleId getActiveRoleId(UUID uuid);
 
     /**
+     * Gets the definition for a role ID.
+     */
+    RoleDefinition getDefinition(RoleId roleId);
+
+    /**
      * Assigns a role to a player and returns the role card item.
      * This operation updates memory and database.
      */

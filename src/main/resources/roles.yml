@@ -4,3 +4,5 @@ TEMPLATE:
   description:
     - "<gray>A generic role card.</gray>"
     - "<gray>Used for system testing.</gray>"
+  abilities:
+    - "TEMPLATE_ABILITY"

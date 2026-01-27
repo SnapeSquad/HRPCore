@@ -41,7 +41,8 @@ public class RoleManager implements RoleService {
                 RoleId id = RoleId.valueOf(key);
                 String name = config.getString(key + ".name", key);
                 List<String> description = config.getStringList(key + ".description");
-                definitions.put(id, new RoleDefinition(id, name, description));
+                List<String> abilities = config.getStringList(key + ".abilities");
+                definitions.put(id, new RoleDefinition(id, name, description, abilities));
             } catch (IllegalArgumentException e) {
                 logger.warning("Invalid Role ID in roles.yml: " + key);
             }
@@ -99,6 +100,11 @@ public class RoleManager implements RoleService {
     @Override
     public RoleId getActiveRoleId(UUID uuid) {
         return activeRoles.getOrDefault(uuid, RoleId.NONE);
+    }
+
+    @Override
+    public RoleDefinition getDefinition(RoleId roleId) {
+        return definitions.get(roleId);
     }
 
     @Override

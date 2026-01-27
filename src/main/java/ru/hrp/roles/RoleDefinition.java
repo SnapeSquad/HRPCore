@@ -5,5 +5,6 @@ import java.util.List;
 public record RoleDefinition(
     RoleId id,
     String name,
-    List<String> description
+    List<String> description,
+    List<String> abilities
 ) {}

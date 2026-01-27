@@ -13,6 +13,11 @@ import ru.hrp.economy.PayDayManager;
 import ru.hrp.economy.PayDayService;
 import ru.hrp.economy.PayDayTask;
 import ru.hrp.economy.VaultEconomyProvider;
+import ru.hrp.roles.AbilityBridge;
+import ru.hrp.roles.AbilityManager;
+import ru.hrp.roles.AbilityService;
+import ru.hrp.roles.CooldownManager;
+import ru.hrp.roles.CooldownService;
 import ru.hrp.roles.RoleCardFactory;
 import ru.hrp.roles.RoleManager;
 import ru.hrp.roles.RoleService;
@@ -30,6 +35,8 @@ public final class HRPCore extends JavaPlugin {
     private EconomyService economyService;
     private PayDayService payDayService;
     private RoleService roleService;
+    private CooldownService cooldownService;
+    private AbilityService abilityService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -60,7 +67,12 @@ public final class HRPCore extends JavaPlugin {
             this.roleService = new RoleManager(getLogger(), databaseService, configService, cardFactory);
             this.roleService.loadDefinitions();
 
-            // 7. Initialize Player Data Service
+            // 7. Initialize Ability Service
+            this.cooldownService = new CooldownManager();
+            this.abilityService = new AbilityManager(getLogger(), configService, cooldownService, roleService);
+            this.abilityService.loadDefinitions();
+
+            // 8. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -69,8 +81,9 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 6. Register Listeners
+            // 9. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
+            getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, cardFactory), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
         } catch (SQLException e) {
@@ -131,6 +144,14 @@ public final class HRPCore extends JavaPlugin {
 
     public RoleService getRoleService() {
         return roleService;
+    }
+
+    public AbilityService getAbilityService() {
+        return abilityService;
+    }
+
+    public CooldownService getCooldownService() {
+        return cooldownService;
     }
 
     private void startPayDayTask() {

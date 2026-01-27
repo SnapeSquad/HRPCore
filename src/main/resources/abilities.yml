@@ -1,0 +1,7 @@
+# HRPCore Ability Definitions
+TEMPLATE_ABILITY:
+  name: "Template Ability"
+  description: "A generic template ability for testing."
+  type: ACTIVE
+  trigger: MANUAL
+  cooldown: 10

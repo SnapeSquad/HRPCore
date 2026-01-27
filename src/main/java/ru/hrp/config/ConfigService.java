@@ -8,4 +8,5 @@ public interface ConfigService {
     FileConfiguration getConfig();
     FileConfiguration getMessages();
     FileConfiguration getRoles();
+    FileConfiguration getAbilities();
 }
