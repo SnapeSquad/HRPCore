@@ -3,10 +3,14 @@ package ru.hrp.core;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import ru.hrp.config.ConfigManager;
 import ru.hrp.config.ConfigService;
 import ru.hrp.economy.EconomyManager;
 import ru.hrp.economy.EconomyService;
+import ru.hrp.economy.PayDayManager;
+import ru.hrp.economy.PayDayService;
+import ru.hrp.economy.PayDayTask;
 import ru.hrp.economy.VaultEconomyProvider;
 import ru.hrp.player.PlayerDataManager;
 import ru.hrp.player.PlayerDataService;
@@ -20,7 +24,9 @@ public final class HRPCore extends JavaPlugin {
     private DatabaseService databaseService;
     private MessageService messageService;
     private EconomyService economyService;
+    private PayDayService payDayService;
     private PlayerDataService playerDataService;
+    private BukkitTask payDayTask;
 
     @Override
     public void onEnable() {
@@ -40,7 +46,11 @@ public final class HRPCore extends JavaPlugin {
             this.economyService = new EconomyManager(getLogger(), databaseService);
             registerVault();
 
-            // 5. Initialize Player Data Service
+            // 5. Initialize PayDay Service
+            this.payDayService = new PayDayManager(economyService);
+            startPayDayTask();
+
+            // 6. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -63,6 +73,18 @@ public final class HRPCore extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (payDayTask != null) {
+            payDayTask.cancel();
+        }
+
+        // Save all data before shutting down database
+        if (playerDataService != null) {
+            playerDataService.saveAll();
+        }
+        if (economyService != null) {
+            economyService.saveAll();
+        }
+
         if (databaseService != null) {
             databaseService.shutdown();
         }
@@ -87,6 +109,17 @@ public final class HRPCore extends JavaPlugin {
 
     public EconomyService getEconomyService() {
         return economyService;
+    }
+
+    public PayDayService getPayDayService() {
+        return payDayService;
+    }
+
+    private void startPayDayTask() {
+        long interval = configService.getConfig().getLong("payday.interval", 15) * 60 * 20; // convert to ticks
+        this.payDayTask = getServer().getScheduler().runTaskTimer(this,
+            new PayDayTask(configService, payDayService, messageService), interval, interval);
+        getLogger().info("PayDay task started with interval of " + (interval / 1200) + " minutes.");
     }
 
     private void registerVault() {

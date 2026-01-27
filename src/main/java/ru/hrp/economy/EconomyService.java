@@ -40,4 +40,9 @@ public interface EconomyService {
      * Sets the balance of a player's account.
      */
     void setBalance(UUID uuid, BigDecimal amount);
+
+    /**
+     * Saves all cached economy accounts to the database.
+     */
+    void saveAll();
 }

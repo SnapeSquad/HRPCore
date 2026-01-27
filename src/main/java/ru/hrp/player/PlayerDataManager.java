@@ -125,4 +125,11 @@ public class PlayerDataManager implements PlayerDataService {
     public Optional<RPPlayer> getPlayer(UUID uuid) {
         return Optional.ofNullable(cache.get(uuid));
     }
+
+    @Override
+    public void saveAll() {
+        for (RPPlayer player : cache.values()) {
+            savePlayerData(player).join(); // Use join() to ensure it's submitted and processed if possible
+        }
+    }
 }

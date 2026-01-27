@@ -91,7 +91,8 @@ public class EconomyManager implements EconomyService {
 
     @Override
     public boolean withdraw(UUID uuid, BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) return false;
+        if (amount.compareTo(BigDecimal.ZERO) < 0) return false;
+        if (amount.compareTo(BigDecimal.ZERO) == 0) return true;
 
         BigDecimal[] result = new BigDecimal[1]; // Using array to get value out of compute
         balanceCache.compute(uuid, (key, current) -> {
@@ -118,5 +119,12 @@ public class EconomyManager implements EconomyService {
         BigDecimal finalAmount = amount;
         balanceCache.put(uuid, finalAmount);
         logger.info("[ECONOMY] Balance set: " + uuid + " = " + finalAmount);
+    }
+
+    @Override
+    public void saveAll() {
+        balanceCache.forEach((uuid, balance) -> {
+            saveAccount(uuid, balance);
+        });
     }
 }

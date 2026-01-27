@@ -4,3 +4,12 @@ database:
 
 # Debug mode
 debug: false
+
+# PayDay Settings
+payday:
+  interval: 15 # in minutes
+  base_salary: 500.00
+  multipliers:
+    "hrp.payday.multiplier.vip": 1.2
+    "hrp.payday.multiplier.mvp": 1.5
+    "hrp.payday.multiplier.elite": 2.0

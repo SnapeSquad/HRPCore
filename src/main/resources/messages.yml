@@ -8,3 +8,6 @@ player:
 errors:
   no_permission: "<red>You do not have permission to do this!</red>"
   only_players: "<red>Only players can execute this command!</red>"
+
+payday:
+  received: "<green>PayDay!</green> You have received <gold>$<amount></gold>. <gray>(Multiplier: <multiplier>x)</gray>"

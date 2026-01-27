@@ -26,4 +26,9 @@ public interface PlayerDataService {
      * Retrieves a player from the in-memory cache.
      */
     Optional<RPPlayer> getPlayer(UUID uuid);
+
+    /**
+     * Saves all cached player data to the database.
+     */
+    void saveAll();
 }
