@@ -9,4 +9,5 @@ public interface ConfigService {
     FileConfiguration getMessages();
     FileConfiguration getRoles();
     FileConfiguration getAbilities();
+    FileConfiguration getTalents();
 }

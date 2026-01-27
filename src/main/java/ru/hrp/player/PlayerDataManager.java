@@ -5,13 +5,15 @@ import ru.hrp.economy.EconomyAccount;
 import ru.hrp.economy.EconomyService;
 import ru.hrp.roles.RoleId;
 import ru.hrp.roles.RoleService;
+import ru.hrp.talents.TalentId;
+import ru.hrp.talents.TalentService;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,14 +26,16 @@ public class PlayerDataManager implements PlayerDataService {
     private final DatabaseService databaseService;
     private final EconomyService economyService;
     private final RoleService roleService;
+    private final TalentService talentService;
     private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, RPPlayer> cache = new ConcurrentHashMap<>();
 
-    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, Consumer<Runnable> syncExecutor) {
+    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, TalentService talentService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.economyService = economyService;
         this.roleService = roleService;
+        this.talentService = talentService;
         this.syncExecutor = syncExecutor;
     }
 
@@ -40,6 +44,7 @@ public class PlayerDataManager implements PlayerDataService {
         // Explicitly coordinate with services
         CompletableFuture<EconomyAccount> econFuture = economyService.loadAccount(uuid);
         CompletableFuture<RoleId> roleFuture = roleService.loadRole(uuid);
+        CompletableFuture<Map<TalentId, Integer>> talentFuture = talentService.loadTalents(uuid);
 
         CompletableFuture<RPPlayer> dbFuture = databaseService.queryAsync(connection -> {
             String sql = "SELECT * FROM players WHERE uuid = ?";
@@ -54,7 +59,7 @@ public class PlayerDataManager implements PlayerDataService {
                             rs.getLong("last_seen"),
                             RoleId.NONE,      // Placeholder
                             "NONE",           // Placeholder
-                            Set.of()          // Placeholder
+                            Collections.emptyMap() // Placeholder
                         );
                     }
                 }
@@ -64,7 +69,7 @@ public class PlayerDataManager implements PlayerDataService {
             return null;
         });
 
-        return CompletableFuture.allOf(econFuture, roleFuture, dbFuture).thenCompose(v -> {
+        return CompletableFuture.allOf(econFuture, roleFuture, talentFuture, dbFuture).thenCompose(v -> {
             RPPlayer player = dbFuture.join();
             CompletableFuture<RPPlayer> future = new CompletableFuture<>();
 
@@ -81,7 +86,7 @@ public class PlayerDataManager implements PlayerDataService {
                         now,
                         roleFuture.join(),
                         "NONE",
-                        Set.of()
+                        talentFuture.join()
                     );
                 } else {
                     // Update name and last seen
@@ -92,7 +97,7 @@ public class PlayerDataManager implements PlayerDataService {
                         now,
                         roleFuture.join(),
                         player.job(),
-                        player.talents()
+                        talentFuture.join()
                     );
                 }
 
@@ -116,6 +121,7 @@ public class PlayerDataManager implements PlayerDataService {
         }
         economyService.unloadAccount(uuid);
         roleService.unloadRole(uuid);
+        talentService.unloadTalents(uuid);
     }
 
     @Override

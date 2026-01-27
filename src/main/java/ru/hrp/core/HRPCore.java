@@ -21,6 +21,8 @@ import ru.hrp.roles.CooldownService;
 import ru.hrp.roles.RoleCardFactory;
 import ru.hrp.roles.RoleManager;
 import ru.hrp.roles.RoleService;
+import ru.hrp.talents.TalentManager;
+import ru.hrp.talents.TalentService;
 import ru.hrp.player.PlayerDataManager;
 import ru.hrp.player.PlayerDataService;
 import ru.hrp.player.PlayerListener;
@@ -37,6 +39,7 @@ public final class HRPCore extends JavaPlugin {
     private RoleService roleService;
     private CooldownService cooldownService;
     private AbilityService abilityService;
+    private TalentService talentService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -67,21 +70,26 @@ public final class HRPCore extends JavaPlugin {
             this.roleService = new RoleManager(getLogger(), databaseService, configService, cardFactory);
             this.roleService.loadDefinitions();
 
-            // 7. Initialize Ability Service
+            // 7. Initialize Talent Service
+            this.talentService = new TalentManager(getLogger(), databaseService, configService);
+            this.talentService.loadDefinitions();
+
+            // 8. Initialize Ability Service
             this.cooldownService = new CooldownManager();
-            this.abilityService = new AbilityManager(getLogger(), configService, cooldownService, roleService);
+            this.abilityService = new AbilityManager(getLogger(), configService, cooldownService, roleService, talentService);
             this.abilityService.loadDefinitions();
 
-            // 8. Initialize Player Data Service
+            // 9. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
                 economyService,
                 roleService,
+                talentService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 9. Register Listeners
+            // 10. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, cardFactory), this);
 
@@ -110,6 +118,9 @@ public final class HRPCore extends JavaPlugin {
         }
         if (roleService != null) {
             roleService.saveAll();
+        }
+        if (talentService != null) {
+            talentService.saveAll();
         }
 
         if (databaseService != null) {
@@ -152,6 +163,10 @@ public final class HRPCore extends JavaPlugin {
 
     public CooldownService getCooldownService() {
         return cooldownService;
+    }
+
+    public TalentService getTalentService() {
+        return talentService;
     }
 
     private void startPayDayTask() {

@@ -12,15 +12,17 @@ public class AbilityManager implements AbilityService {
     private final ConfigService configService;
     private final CooldownService cooldownService;
     private final RoleService roleService;
+    private final ru.hrp.talents.TalentService talentService;
 
     private final Map<String, AbilityDefinition> definitions = new HashMap<>();
     private final Map<String, AbilityExecutor> executors = new HashMap<>();
 
-    public AbilityManager(Logger logger, ConfigService configService, CooldownService cooldownService, RoleService roleService) {
+    public AbilityManager(Logger logger, ConfigService configService, CooldownService cooldownService, RoleService roleService, ru.hrp.talents.TalentService talentService) {
         this.logger = logger;
         this.configService = configService;
         this.cooldownService = cooldownService;
         this.roleService = roleService;
+        this.talentService = talentService;
     }
 
     @Override

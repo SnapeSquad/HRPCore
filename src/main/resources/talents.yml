@@ -1,0 +1,6 @@
+# HRPCore Talent Definitions
+STRENGTH:
+  name: "<red>Strength</red>"
+  description:
+    - "<gray>Increases physical damage.</gray>"
+  max_level: 3

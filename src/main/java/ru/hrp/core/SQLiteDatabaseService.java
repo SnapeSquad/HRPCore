@@ -68,6 +68,14 @@ public class SQLiteDatabaseService implements DatabaseService {
                     role_id TEXT NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_talents (
+                    uuid TEXT NOT NULL,
+                    talent_id TEXT NOT NULL,
+                    level INTEGER NOT NULL,
+                    PRIMARY KEY (uuid, talent_id)
+                );
+            """);
         }
     }
 

@@ -1,8 +1,10 @@
 package ru.hrp.player;
 
 import ru.hrp.roles.RoleId;
+import ru.hrp.talents.TalentId;
 
-import java.util.Set;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -17,7 +19,7 @@ public record RPPlayer(
     // Placeholders for future systems
     RoleId role,
     String job,
-    Set<String> talents
+    Map<TalentId, Integer> talents
 ) {
     /**
      * Creates a new RPPlayer with default values for new players.
@@ -31,7 +33,7 @@ public record RPPlayer(
             now,
             RoleId.NONE,
             "NONE",
-            Set.of()
+            Collections.emptyMap()
         );
     }
 }

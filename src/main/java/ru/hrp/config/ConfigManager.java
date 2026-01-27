@@ -17,10 +17,12 @@ public class ConfigManager implements ConfigService {
     private FileConfiguration messages;
     private FileConfiguration roles;
     private FileConfiguration abilities;
+    private FileConfiguration talents;
     private File configFile;
     private File messagesFile;
     private File rolesFile;
     private File abilitiesFile;
+    private File talentsFile;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -28,6 +30,7 @@ public class ConfigManager implements ConfigService {
         this.messagesFile = new File(plugin.getDataFolder(), "messages.yml");
         this.rolesFile = new File(plugin.getDataFolder(), "roles.yml");
         this.abilitiesFile = new File(plugin.getDataFolder(), "abilities.yml");
+        this.talentsFile = new File(plugin.getDataFolder(), "talents.yml");
     }
 
     @Override
@@ -40,11 +43,13 @@ public class ConfigManager implements ConfigService {
         saveDefaultConfig("messages.yml");
         saveDefaultConfig("roles.yml");
         saveDefaultConfig("abilities.yml");
+        saveDefaultConfig("talents.yml");
 
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         roles = YamlConfiguration.loadConfiguration(rolesFile);
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
+        talents = YamlConfiguration.loadConfiguration(talentsFile);
 
         loadDefaults("messages.yml", messages);
     }
@@ -69,6 +74,7 @@ public class ConfigManager implements ConfigService {
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         roles = YamlConfiguration.loadConfiguration(rolesFile);
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
+        talents = YamlConfiguration.loadConfiguration(talentsFile);
     }
 
     @Override
@@ -89,5 +95,10 @@ public class ConfigManager implements ConfigService {
     @Override
     public FileConfiguration getAbilities() {
         return abilities;
+    }
+
+    @Override
+    public FileConfiguration getTalents() {
+        return talents;
     }
 }
