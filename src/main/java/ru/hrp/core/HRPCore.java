@@ -1,8 +1,13 @@
 package ru.hrp.core;
 
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.hrp.config.ConfigManager;
 import ru.hrp.config.ConfigService;
+import ru.hrp.economy.EconomyManager;
+import ru.hrp.economy.EconomyService;
+import ru.hrp.economy.VaultEconomyProvider;
 import ru.hrp.player.PlayerDataManager;
 import ru.hrp.player.PlayerDataService;
 import ru.hrp.player.PlayerListener;
@@ -14,6 +19,7 @@ public final class HRPCore extends JavaPlugin {
     private ConfigService configService;
     private DatabaseService databaseService;
     private MessageService messageService;
+    private EconomyService economyService;
     private PlayerDataService playerDataService;
 
     @Override
@@ -30,10 +36,19 @@ public final class HRPCore extends JavaPlugin {
             // 3. Initialize Message Service
             this.messageService = new MessageManager(configService);
 
-            // 4. Initialize Player Data Service
-            this.playerDataService = new PlayerDataManager(this, databaseService);
+            // 4. Initialize Economy Service
+            this.economyService = new EconomyManager(getLogger(), databaseService);
+            registerVault();
 
-            // 5. Register Listeners
+            // 5. Initialize Player Data Service
+            this.playerDataService = new PlayerDataManager(
+                getLogger(),
+                databaseService,
+                economyService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
+
+            // 6. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
@@ -68,5 +83,18 @@ public final class HRPCore extends JavaPlugin {
 
     public PlayerDataService getPlayerDataService() {
         return playerDataService;
+    }
+
+    public EconomyService getEconomyService() {
+        return economyService;
+    }
+
+    private void registerVault() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            getLogger().warning("Vault not found! Economy integration disabled.");
+            return;
+        }
+        getServer().getServicesManager().register(Economy.class, new VaultEconomyProvider(economyService), this, ServicePriority.Highest);
+        getLogger().info("Registered HRPCore as Vault Economy provider.");
     }
 }

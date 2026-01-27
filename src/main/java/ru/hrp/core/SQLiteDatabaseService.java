@@ -56,6 +56,12 @@ public class SQLiteDatabaseService implements DatabaseService {
                     last_seen INTEGER NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS economy_accounts (
+                    uuid TEXT PRIMARY KEY,
+                    balance TEXT NOT NULL
+                );
+            """);
         }
     }
 

@@ -1,10 +1,9 @@
 package ru.hrp.player;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 import ru.hrp.core.DatabaseService;
+import ru.hrp.economy.EconomyAccount;
+import ru.hrp.economy.EconomyService;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,21 +13,30 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PlayerDataManager implements PlayerDataService {
-    private final JavaPlugin plugin;
+    private final Logger logger;
     private final DatabaseService databaseService;
+    private final EconomyService economyService;
+    private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, RPPlayer> cache = new ConcurrentHashMap<>();
 
-    public PlayerDataManager(JavaPlugin plugin, DatabaseService databaseService) {
-        this.plugin = plugin;
+    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, Consumer<Runnable> syncExecutor) {
+        this.logger = logger;
         this.databaseService = databaseService;
+        this.economyService = economyService;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
     public CompletableFuture<RPPlayer> loadPlayerData(UUID uuid, String name) {
-        return databaseService.queryAsync(connection -> {
+        // Explicitly coordinate with EconomyService
+        CompletableFuture<EconomyAccount> econFuture = economyService.loadAccount(uuid);
+
+        CompletableFuture<RPPlayer> dbFuture = databaseService.queryAsync(connection -> {
             String sql = "SELECT * FROM players WHERE uuid = ?";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, uuid.toString());
@@ -39,7 +47,6 @@ public class PlayerDataManager implements PlayerDataService {
                             rs.getString("last_name"),
                             rs.getLong("first_join"),
                             rs.getLong("last_seen"),
-                            BigDecimal.ZERO, // Placeholder
                             "NONE",           // Placeholder
                             "NONE",           // Placeholder
                             Set.of()          // Placeholder
@@ -47,14 +54,17 @@ public class PlayerDataManager implements PlayerDataService {
                     }
                 }
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to load player data for " + uuid, e);
+                logger.log(Level.SEVERE, "Failed to load player data for " + uuid, e);
             }
             return null;
-        }).thenCompose(player -> {
+        });
+
+        return CompletableFuture.allOf(econFuture, dbFuture).thenCompose(v -> {
+            RPPlayer player = dbFuture.join();
             CompletableFuture<RPPlayer> future = new CompletableFuture<>();
 
             // Switch to main thread to update cache and finalize player state
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            syncExecutor.accept(() -> {
                 long now = System.currentTimeMillis();
                 RPPlayer finalPlayer;
 
@@ -67,7 +77,6 @@ public class PlayerDataManager implements PlayerDataService {
                         name,
                         player.firstJoin(),
                         now,
-                        player.economyBalance(),
                         player.role(),
                         player.job(),
                         player.talents()
@@ -92,6 +101,7 @@ public class PlayerDataManager implements PlayerDataService {
         if (player != null) {
             savePlayerData(player);
         }
+        economyService.unloadAccount(uuid);
     }
 
     @Override
@@ -106,7 +116,7 @@ public class PlayerDataManager implements PlayerDataService {
                 pstmt.setLong(4, player.lastSeen());
                 pstmt.executeUpdate();
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to save player data for " + player.uuid(), e);
+                logger.log(Level.SEVERE, "Failed to save player data for " + player.uuid(), e);
             }
         });
     }

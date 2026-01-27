@@ -1,6 +1,5 @@
 package ru.hrp.player;
 
-import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,7 +13,6 @@ public record RPPlayer(
     long lastSeen,
 
     // Placeholders for future systems
-    BigDecimal economyBalance,
     String role,
     String job,
     Set<String> talents
@@ -29,7 +27,6 @@ public record RPPlayer(
             name,
             now,
             now,
-            BigDecimal.ZERO,
             "NONE",
             "NONE",
             Set.of()
