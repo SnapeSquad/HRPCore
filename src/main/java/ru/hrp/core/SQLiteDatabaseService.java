@@ -62,6 +62,12 @@ public class SQLiteDatabaseService implements DatabaseService {
                     balance TEXT NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_roles (
+                    uuid TEXT PRIMARY KEY,
+                    role_id TEXT NOT NULL
+                );
+            """);
         }
     }
 

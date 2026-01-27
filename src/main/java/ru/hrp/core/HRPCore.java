@@ -1,6 +1,7 @@
 package ru.hrp.core;
 
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -12,6 +13,9 @@ import ru.hrp.economy.PayDayManager;
 import ru.hrp.economy.PayDayService;
 import ru.hrp.economy.PayDayTask;
 import ru.hrp.economy.VaultEconomyProvider;
+import ru.hrp.roles.RoleCardFactory;
+import ru.hrp.roles.RoleManager;
+import ru.hrp.roles.RoleService;
 import ru.hrp.player.PlayerDataManager;
 import ru.hrp.player.PlayerDataService;
 import ru.hrp.player.PlayerListener;
@@ -25,6 +29,7 @@ public final class HRPCore extends JavaPlugin {
     private MessageService messageService;
     private EconomyService economyService;
     private PayDayService payDayService;
+    private RoleService roleService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -50,11 +55,17 @@ public final class HRPCore extends JavaPlugin {
             this.payDayService = new PayDayManager(economyService);
             startPayDayTask();
 
-            // 6. Initialize Player Data Service
+            // 6. Initialize Role Service
+            RoleCardFactory cardFactory = new RoleCardFactory(new NamespacedKey(this, "role_id"));
+            this.roleService = new RoleManager(getLogger(), databaseService, configService, cardFactory);
+            this.roleService.loadDefinitions();
+
+            // 7. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
                 economyService,
+                roleService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
@@ -83,6 +94,9 @@ public final class HRPCore extends JavaPlugin {
         }
         if (economyService != null) {
             economyService.saveAll();
+        }
+        if (roleService != null) {
+            roleService.saveAll();
         }
 
         if (databaseService != null) {
@@ -113,6 +127,10 @@ public final class HRPCore extends JavaPlugin {
 
     public PayDayService getPayDayService() {
         return payDayService;
+    }
+
+    public RoleService getRoleService() {
+        return roleService;
     }
 
     private void startPayDayTask() {

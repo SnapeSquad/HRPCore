@@ -7,4 +7,5 @@ public interface ConfigService {
     void reloadConfigs();
     FileConfiguration getConfig();
     FileConfiguration getMessages();
+    FileConfiguration getRoles();
 }

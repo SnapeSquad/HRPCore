@@ -1,0 +1,6 @@
+# HRPCore Role Definitions
+TEMPLATE:
+  name: "<gray>Template Card</gray>"
+  description:
+    - "<gray>A generic role card.</gray>"
+    - "<gray>Used for system testing.</gray>"

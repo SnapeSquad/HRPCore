@@ -3,6 +3,8 @@ package ru.hrp.player;
 import ru.hrp.core.DatabaseService;
 import ru.hrp.economy.EconomyAccount;
 import ru.hrp.economy.EconomyService;
+import ru.hrp.roles.RoleId;
+import ru.hrp.roles.RoleService;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,20 +23,23 @@ public class PlayerDataManager implements PlayerDataService {
     private final Logger logger;
     private final DatabaseService databaseService;
     private final EconomyService economyService;
+    private final RoleService roleService;
     private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, RPPlayer> cache = new ConcurrentHashMap<>();
 
-    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, Consumer<Runnable> syncExecutor) {
+    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.economyService = economyService;
+        this.roleService = roleService;
         this.syncExecutor = syncExecutor;
     }
 
     @Override
     public CompletableFuture<RPPlayer> loadPlayerData(UUID uuid, String name) {
-        // Explicitly coordinate with EconomyService
+        // Explicitly coordinate with services
         CompletableFuture<EconomyAccount> econFuture = economyService.loadAccount(uuid);
+        CompletableFuture<RoleId> roleFuture = roleService.loadRole(uuid);
 
         CompletableFuture<RPPlayer> dbFuture = databaseService.queryAsync(connection -> {
             String sql = "SELECT * FROM players WHERE uuid = ?";
@@ -47,7 +52,7 @@ public class PlayerDataManager implements PlayerDataService {
                             rs.getString("last_name"),
                             rs.getLong("first_join"),
                             rs.getLong("last_seen"),
-                            "NONE",           // Placeholder
+                            RoleId.NONE,      // Placeholder
                             "NONE",           // Placeholder
                             Set.of()          // Placeholder
                         );
@@ -59,7 +64,7 @@ public class PlayerDataManager implements PlayerDataService {
             return null;
         });
 
-        return CompletableFuture.allOf(econFuture, dbFuture).thenCompose(v -> {
+        return CompletableFuture.allOf(econFuture, roleFuture, dbFuture).thenCompose(v -> {
             RPPlayer player = dbFuture.join();
             CompletableFuture<RPPlayer> future = new CompletableFuture<>();
 
@@ -69,7 +74,15 @@ public class PlayerDataManager implements PlayerDataService {
                 RPPlayer finalPlayer;
 
                 if (player == null) {
-                    finalPlayer = RPPlayer.createDefault(uuid, name);
+                    finalPlayer = new RPPlayer(
+                        uuid,
+                        name,
+                        now,
+                        now,
+                        roleFuture.join(),
+                        "NONE",
+                        Set.of()
+                    );
                 } else {
                     // Update name and last seen
                     finalPlayer = new RPPlayer(
@@ -77,7 +90,7 @@ public class PlayerDataManager implements PlayerDataService {
                         name,
                         player.firstJoin(),
                         now,
-                        player.role(),
+                        roleFuture.join(),
                         player.job(),
                         player.talents()
                     );
@@ -102,6 +115,7 @@ public class PlayerDataManager implements PlayerDataService {
             savePlayerData(player);
         }
         economyService.unloadAccount(uuid);
+        roleService.unloadRole(uuid);
     }
 
     @Override

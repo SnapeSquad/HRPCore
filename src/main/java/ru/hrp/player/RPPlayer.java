@@ -1,5 +1,7 @@
 package ru.hrp.player;
 
+import ru.hrp.roles.RoleId;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,7 +15,7 @@ public record RPPlayer(
     long lastSeen,
 
     // Placeholders for future systems
-    String role,
+    RoleId role,
     String job,
     Set<String> talents
 ) {
@@ -27,7 +29,7 @@ public record RPPlayer(
             name,
             now,
             now,
-            "NONE",
+            RoleId.NONE,
             "NONE",
             Set.of()
         );
