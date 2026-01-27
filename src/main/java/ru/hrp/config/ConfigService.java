@@ -10,4 +10,5 @@ public interface ConfigService {
     FileConfiguration getRoles();
     FileConfiguration getAbilities();
     FileConfiguration getTalents();
+    FileConfiguration getCrimes();
 }

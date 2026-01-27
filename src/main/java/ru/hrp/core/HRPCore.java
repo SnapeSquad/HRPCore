@@ -19,6 +19,11 @@ import ru.hrp.roles.AbilityService;
 import ru.hrp.roles.CooldownManager;
 import ru.hrp.roles.CooldownService;
 import ru.hrp.roles.RoleCardFactory;
+import ru.hrp.crime.CrimeManager;
+import ru.hrp.crime.CrimeService;
+import ru.hrp.crime.JailListener;
+import ru.hrp.crime.JailManager;
+import ru.hrp.crime.JailService;
 import ru.hrp.roles.RoleManager;
 import ru.hrp.roles.RoleService;
 import ru.hrp.talents.TalentManager;
@@ -40,6 +45,8 @@ public final class HRPCore extends JavaPlugin {
     private CooldownService cooldownService;
     private AbilityService abilityService;
     private TalentService talentService;
+    private CrimeService crimeService;
+    private JailService jailService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -79,19 +86,27 @@ public final class HRPCore extends JavaPlugin {
             this.abilityService = new AbilityManager(getLogger(), configService, cooldownService, roleService, talentService);
             this.abilityService.loadDefinitions();
 
-            // 9. Initialize Player Data Service
+            // 9. Initialize Crime & Jail Services
+            this.crimeService = new CrimeManager(getLogger(), databaseService, configService);
+            this.crimeService.loadDefinitions();
+            this.jailService = new JailManager(getLogger(), databaseService);
+
+            // 10. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
                 economyService,
                 roleService,
                 talentService,
+                crimeService,
+                jailService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 10. Register Listeners
+            // 11. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, cardFactory), this);
+            getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
         } catch (SQLException e) {
@@ -121,6 +136,12 @@ public final class HRPCore extends JavaPlugin {
         }
         if (talentService != null) {
             talentService.saveAll();
+        }
+        if (crimeService != null) {
+            crimeService.saveAll();
+        }
+        if (jailService != null) {
+            jailService.saveAll();
         }
 
         if (databaseService != null) {
@@ -167,6 +188,14 @@ public final class HRPCore extends JavaPlugin {
 
     public TalentService getTalentService() {
         return talentService;
+    }
+
+    public CrimeService getCrimeService() {
+        return crimeService;
+    }
+
+    public JailService getJailService() {
+        return jailService;
     }
 
     private void startPayDayTask() {

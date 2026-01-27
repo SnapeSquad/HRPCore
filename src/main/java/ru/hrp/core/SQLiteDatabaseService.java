@@ -76,6 +76,21 @@ public class SQLiteDatabaseService implements DatabaseService {
                     PRIMARY KEY (uuid, talent_id)
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_crimes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uuid TEXT NOT NULL,
+                    crime_id TEXT NOT NULL,
+                    timestamp INTEGER NOT NULL,
+                    resolved INTEGER NOT NULL
+                );
+            """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_jail (
+                    uuid TEXT PRIMARY KEY,
+                    release_timestamp INTEGER NOT NULL
+                );
+            """);
         }
     }
 

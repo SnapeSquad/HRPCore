@@ -18,11 +18,13 @@ public class ConfigManager implements ConfigService {
     private FileConfiguration roles;
     private FileConfiguration abilities;
     private FileConfiguration talents;
+    private FileConfiguration crimes;
     private File configFile;
     private File messagesFile;
     private File rolesFile;
     private File abilitiesFile;
     private File talentsFile;
+    private File crimesFile;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -31,6 +33,7 @@ public class ConfigManager implements ConfigService {
         this.rolesFile = new File(plugin.getDataFolder(), "roles.yml");
         this.abilitiesFile = new File(plugin.getDataFolder(), "abilities.yml");
         this.talentsFile = new File(plugin.getDataFolder(), "talents.yml");
+        this.crimesFile = new File(plugin.getDataFolder(), "crimes.yml");
     }
 
     @Override
@@ -44,12 +47,14 @@ public class ConfigManager implements ConfigService {
         saveDefaultConfig("roles.yml");
         saveDefaultConfig("abilities.yml");
         saveDefaultConfig("talents.yml");
+        saveDefaultConfig("crimes.yml");
 
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         roles = YamlConfiguration.loadConfiguration(rolesFile);
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
         talents = YamlConfiguration.loadConfiguration(talentsFile);
+        crimes = YamlConfiguration.loadConfiguration(crimesFile);
 
         loadDefaults("messages.yml", messages);
     }
@@ -75,6 +80,7 @@ public class ConfigManager implements ConfigService {
         roles = YamlConfiguration.loadConfiguration(rolesFile);
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
         talents = YamlConfiguration.loadConfiguration(talentsFile);
+        crimes = YamlConfiguration.loadConfiguration(crimesFile);
     }
 
     @Override
@@ -100,5 +106,10 @@ public class ConfigManager implements ConfigService {
     @Override
     public FileConfiguration getTalents() {
         return talents;
+    }
+
+    @Override
+    public FileConfiguration getCrimes() {
+        return crimes;
     }
 }

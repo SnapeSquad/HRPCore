@@ -13,3 +13,13 @@ payday:
     "hrp.payday.multiplier.vip": 1.2
     "hrp.payday.multiplier.mvp": 1.5
     "hrp.payday.multiplier.elite": 2.0
+
+# Jail Settings
+jail:
+  location:
+    world: "world"
+    x: 0.0
+    y: 100.0
+    z: 0.0
+    yaw: 0.0
+    pitch: 0.0

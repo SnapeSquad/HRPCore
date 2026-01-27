@@ -1,0 +1,10 @@
+# HRPCore Crime Definitions
+THEFT:
+  name: "Theft"
+  jail_time: 300 # 5 minutes
+ASSAULT:
+  name: "Assault"
+  jail_time: 600 # 10 minutes
+MURDER:
+  name: "Murder"
+  jail_time: 1800 # 30 minutes
