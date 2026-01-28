@@ -122,6 +122,11 @@ public class TalentManager implements TalentService {
     }
 
     @Override
+    public TalentDefinition getDefinition(TalentId talentId) {
+        return definitions.get(talentId);
+    }
+
+    @Override
     public void setTalentLevel(UUID uuid, TalentId talentId, int level) {
         TalentDefinition definition = definitions.get(talentId);
         if (definition == null) return;

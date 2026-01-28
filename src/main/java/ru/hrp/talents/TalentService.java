@@ -31,6 +31,11 @@ public interface TalentService {
     int getTalentLevel(UUID uuid, TalentId talentId);
 
     /**
+     * Gets the definition for a talent ID.
+     */
+    TalentDefinition getDefinition(TalentId talentId);
+
+    /**
      * Sets a player's talent level.
      */
     void setTalentLevel(UUID uuid, TalentId talentId, int level);

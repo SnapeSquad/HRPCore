@@ -13,6 +13,7 @@ public interface BankService {
     void unloadCredits(UUID uuid);
 
     BigDecimal getBankBalance(UUID uuid);
+    List<CreditRecord> getCredits(UUID uuid);
     void depositToBank(UUID uuid, BigDecimal amount);
     boolean withdrawFromBank(UUID uuid, BigDecimal amount);
 

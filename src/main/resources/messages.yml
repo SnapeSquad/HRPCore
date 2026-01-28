@@ -11,3 +11,20 @@ errors:
 
 payday:
   received: "<green>PayDay!</green> You have received <gold>$<amount></gold>. <gray>(Multiplier: <multiplier>x)</gray>"
+
+gui:
+  status:
+    title: "<blue>Your Status</blue>"
+    item_role: "<yellow>Role</yellow>"
+    item_talents: "<green>Talents</green>"
+    item_bank: "<gold>Bank & Financials</gold>"
+    item_medical: "<red>Medical Condition</red>"
+    item_jail: "<gray>Legal Status</gray>"
+  role:
+    title: "<blue>Role Information</blue>"
+  talent:
+    title: "<blue>Your Talents</blue>"
+  bank:
+    title: "<blue>Bank & Credits</blue>"
+  common:
+    back: "<red>Back</red>"

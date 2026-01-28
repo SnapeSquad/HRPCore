@@ -135,6 +135,11 @@ public class BankManager implements BankService {
     }
 
     @Override
+    public List<CreditRecord> getCredits(UUID uuid) {
+        return List.copyOf(creditCache.getOrDefault(uuid, Collections.emptyList()));
+    }
+
+    @Override
     public void depositToBank(UUID uuid, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) return;
         bankCache.compute(uuid, (k, v) -> (v == null ? BigDecimal.ZERO : v).add(amount));

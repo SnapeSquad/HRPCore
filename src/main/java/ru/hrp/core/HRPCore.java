@@ -26,6 +26,9 @@ import ru.hrp.jail.JailManager;
 import ru.hrp.jail.JailService;
 import ru.hrp.bank.BankManager;
 import ru.hrp.bank.BankService;
+import ru.hrp.gui.GuiListener;
+import ru.hrp.gui.GuiManager;
+import ru.hrp.gui.GuiService;
 import ru.hrp.medical.MedicalListener;
 import ru.hrp.medical.MedicalManager;
 import ru.hrp.medical.MedicalService;
@@ -54,6 +57,7 @@ public final class HRPCore extends JavaPlugin {
     private JailService jailService;
     private BankService bankService;
     private MedicalService medicalService;
+    private GuiService guiService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -137,7 +141,21 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 12. Initialize Player Data Service
+            // 12. Initialize GUI Service
+            this.guiService = new GuiManager(
+                playerDataService,
+                roleService,
+                talentService,
+                economyService,
+                bankService,
+                crimeService,
+                jailService,
+                medicalService,
+                messageService,
+                configService
+            );
+
+            // 13. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -151,11 +169,12 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 13. Register Listeners
+            // 14. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, cardFactory), this);
             getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
             getServer().getPluginManager().registerEvents(new MedicalListener(medicalService), this);
+            getServer().getPluginManager().registerEvents(new GuiListener(guiService), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
         } catch (SQLException e) {
@@ -259,6 +278,10 @@ public final class HRPCore extends JavaPlugin {
 
     public MedicalService getMedicalService() {
         return medicalService;
+    }
+
+    public GuiService getGuiService() {
+        return guiService;
     }
 
     private void startPayDayTask() {
