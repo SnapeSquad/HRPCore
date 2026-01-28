@@ -109,6 +109,13 @@ public class SQLiteDatabaseService implements DatabaseService {
                     status TEXT NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_medical (
+                    uuid TEXT PRIMARY KEY,
+                    state TEXT NOT NULL,
+                    state_timestamp INTEGER NOT NULL
+                );
+            """);
         }
     }
 
