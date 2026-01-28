@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,14 +17,16 @@ public class CrimeManager implements CrimeService {
     private final Logger logger;
     private final DatabaseService databaseService;
     private final ConfigService configService;
+    private final Consumer<Runnable> syncExecutor;
 
     private final Map<CrimeId, CrimeDefinition> definitions = new HashMap<>();
     private final Map<UUID, List<CrimeRecord>> playerCrimes = new ConcurrentHashMap<>();
 
-    public CrimeManager(Logger logger, DatabaseService databaseService, ConfigService configService) {
+    public CrimeManager(Logger logger, DatabaseService databaseService, ConfigService configService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.configService = configService;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
@@ -65,9 +68,13 @@ public class CrimeManager implements CrimeService {
                 logger.log(Level.SEVERE, "Failed to load crimes for " + uuid, e);
             }
             return crimes;
-        }).thenApply(crimes -> {
-            playerCrimes.put(uuid, Collections.synchronizedList(crimes));
-            return crimes;
+        }).thenCompose(crimes -> {
+            CompletableFuture<List<CrimeRecord>> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                playerCrimes.put(uuid, Collections.synchronizedList(crimes));
+                future.complete(crimes);
+            });
+            return future;
         });
     }
 
@@ -109,11 +116,15 @@ public class CrimeManager implements CrimeService {
                 logger.log(Level.SEVERE, "Failed to report crime for " + uuid, e);
             }
             return null;
-        }).thenApply(record -> {
-            if (record != null) {
-                playerCrimes.computeIfAbsent(uuid, k -> Collections.synchronizedList(new ArrayList<>())).add(record);
-            }
-            return record;
+        }).thenCompose(record -> {
+            CompletableFuture<CrimeRecord> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                if (record != null) {
+                    playerCrimes.computeIfAbsent(uuid, k -> Collections.synchronizedList(new ArrayList<>())).add(record);
+                }
+                future.complete(record);
+            });
+            return future;
         });
     }
 
@@ -127,7 +138,7 @@ public class CrimeManager implements CrimeService {
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Failed to resolve crime " + crimeId, e);
             }
-        }).thenRun(() -> {
+        }).thenRun(() -> syncExecutor.accept(() -> {
             // Update in-memory if present
             playerCrimes.values().forEach(list -> {
                 for (int i = 0; i < list.size(); i++) {
@@ -138,7 +149,7 @@ public class CrimeManager implements CrimeService {
                     }
                 }
             });
-        });
+        }));
     }
 
     @Override

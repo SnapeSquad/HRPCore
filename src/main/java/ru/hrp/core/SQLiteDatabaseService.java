@@ -91,6 +91,24 @@ public class SQLiteDatabaseService implements DatabaseService {
                     release_timestamp INTEGER NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS bank_accounts (
+                    uuid TEXT PRIMARY KEY,
+                    balance TEXT NOT NULL
+                );
+            """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_credits (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uuid TEXT NOT NULL,
+                    principal TEXT NOT NULL,
+                    interest_rate TEXT NOT NULL,
+                    total_amount TEXT NOT NULL,
+                    remaining_amount TEXT NOT NULL,
+                    due_timestamp INTEGER NOT NULL,
+                    status TEXT NOT NULL
+                );
+            """);
         }
     }
 

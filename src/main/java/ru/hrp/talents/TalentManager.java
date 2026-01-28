@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,14 +19,16 @@ public class TalentManager implements TalentService {
     private final Logger logger;
     private final DatabaseService databaseService;
     private final ConfigService configService;
+    private final Consumer<Runnable> syncExecutor;
 
     private final Map<TalentId, TalentDefinition> definitions = new HashMap<>();
     private final Map<UUID, Map<TalentId, Integer>> playerTalents = new ConcurrentHashMap<>();
 
-    public TalentManager(Logger logger, DatabaseService databaseService, ConfigService configService) {
+    public TalentManager(Logger logger, DatabaseService databaseService, ConfigService configService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.configService = configService;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
@@ -72,9 +75,13 @@ public class TalentManager implements TalentService {
                 logger.log(Level.SEVERE, "Failed to load talents for " + uuid, e);
             }
             return talents;
-        }).thenApply(talents -> {
-            playerTalents.put(uuid, new ConcurrentHashMap<>(talents));
-            return talents;
+        }).thenCompose(talents -> {
+            CompletableFuture<Map<TalentId, Integer>> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                playerTalents.put(uuid, new ConcurrentHashMap<>(talents));
+                future.complete(talents);
+            });
+            return future;
         });
     }
 

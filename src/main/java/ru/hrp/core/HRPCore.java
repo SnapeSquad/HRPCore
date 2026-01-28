@@ -21,9 +21,11 @@ import ru.hrp.roles.CooldownService;
 import ru.hrp.roles.RoleCardFactory;
 import ru.hrp.crime.CrimeManager;
 import ru.hrp.crime.CrimeService;
-import ru.hrp.crime.JailListener;
-import ru.hrp.crime.JailManager;
-import ru.hrp.crime.JailService;
+import ru.hrp.jail.JailListener;
+import ru.hrp.jail.JailManager;
+import ru.hrp.jail.JailService;
+import ru.hrp.bank.BankManager;
+import ru.hrp.bank.BankService;
 import ru.hrp.roles.RoleManager;
 import ru.hrp.roles.RoleService;
 import ru.hrp.talents.TalentManager;
@@ -47,6 +49,7 @@ public final class HRPCore extends JavaPlugin {
     private TalentService talentService;
     private CrimeService crimeService;
     private JailService jailService;
+    private BankService bankService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
 
@@ -65,7 +68,11 @@ public final class HRPCore extends JavaPlugin {
             this.messageService = new MessageManager(configService);
 
             // 4. Initialize Economy Service
-            this.economyService = new EconomyManager(getLogger(), databaseService);
+            this.economyService = new EconomyManager(
+                getLogger(),
+                databaseService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
             registerVault();
 
             // 5. Initialize PayDay Service
@@ -74,11 +81,22 @@ public final class HRPCore extends JavaPlugin {
 
             // 6. Initialize Role Service
             RoleCardFactory cardFactory = new RoleCardFactory(new NamespacedKey(this, "role_id"));
-            this.roleService = new RoleManager(getLogger(), databaseService, configService, cardFactory);
+            this.roleService = new RoleManager(
+                getLogger(),
+                databaseService,
+                configService,
+                cardFactory,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
             this.roleService.loadDefinitions();
 
             // 7. Initialize Talent Service
-            this.talentService = new TalentManager(getLogger(), databaseService, configService);
+            this.talentService = new TalentManager(
+                getLogger(),
+                databaseService,
+                configService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
             this.talentService.loadDefinitions();
 
             // 8. Initialize Ability Service
@@ -87,11 +105,27 @@ public final class HRPCore extends JavaPlugin {
             this.abilityService.loadDefinitions();
 
             // 9. Initialize Crime & Jail Services
-            this.crimeService = new CrimeManager(getLogger(), databaseService, configService);
+            this.crimeService = new CrimeManager(
+                getLogger(),
+                databaseService,
+                configService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
             this.crimeService.loadDefinitions();
-            this.jailService = new JailManager(getLogger(), databaseService);
+            this.jailService = new JailManager(
+                getLogger(),
+                databaseService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
 
-            // 10. Initialize Player Data Service
+            // 10. Initialize Bank Service
+            this.bankService = new BankManager(
+                getLogger(),
+                databaseService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
+
+            // 11. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -100,6 +134,7 @@ public final class HRPCore extends JavaPlugin {
                 talentService,
                 crimeService,
                 jailService,
+                bankService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
@@ -142,6 +177,9 @@ public final class HRPCore extends JavaPlugin {
         }
         if (jailService != null) {
             jailService.saveAll();
+        }
+        if (bankService != null) {
+            bankService.saveAll();
         }
 
         if (databaseService != null) {
@@ -196,6 +234,10 @@ public final class HRPCore extends JavaPlugin {
 
     public JailService getJailService() {
         return jailService;
+    }
+
+    public BankService getBankService() {
+        return bankService;
     }
 
     private void startPayDayTask() {

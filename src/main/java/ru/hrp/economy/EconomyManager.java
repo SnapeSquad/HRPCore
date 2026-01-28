@@ -10,17 +10,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EconomyManager implements EconomyService {
     private final Logger logger;
     private final DatabaseService databaseService;
+    private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, BigDecimal> balanceCache = new ConcurrentHashMap<>();
 
-    public EconomyManager(Logger logger, DatabaseService databaseService) {
+    public EconomyManager(Logger logger, DatabaseService databaseService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
@@ -38,9 +41,13 @@ public class EconomyManager implements EconomyService {
                 logger.log(Level.SEVERE, "Failed to load economy account for " + uuid, e);
             }
             return BigDecimal.ZERO; // Default balance if not found
-        }).thenApply(balance -> {
-            balanceCache.put(uuid, balance);
-            return new EconomyAccount(uuid, balance);
+        }).thenCompose(balance -> {
+            CompletableFuture<EconomyAccount> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                balanceCache.put(uuid, balance);
+                future.complete(new EconomyAccount(uuid, balance));
+            });
+            return future;
         });
     }
 

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,15 +22,17 @@ public class RoleManager implements RoleService {
     private final DatabaseService databaseService;
     private final ConfigService configService;
     private final RoleCardFactory cardFactory;
+    private final Consumer<Runnable> syncExecutor;
 
     private final Map<RoleId, RoleDefinition> definitions = new HashMap<>();
     private final Map<UUID, RoleId> activeRoles = new ConcurrentHashMap<>();
 
-    public RoleManager(Logger logger, DatabaseService databaseService, ConfigService configService, RoleCardFactory cardFactory) {
+    public RoleManager(Logger logger, DatabaseService databaseService, ConfigService configService, RoleCardFactory cardFactory, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.configService = configService;
         this.cardFactory = cardFactory;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
@@ -69,9 +72,13 @@ public class RoleManager implements RoleService {
                 logger.log(Level.SEVERE, "Failed to load role for " + uuid, e);
             }
             return RoleId.NONE;
-        }).thenApply(roleId -> {
-            activeRoles.put(uuid, roleId);
-            return roleId;
+        }).thenCompose(roleId -> {
+            CompletableFuture<RoleId> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                activeRoles.put(uuid, roleId);
+                future.complete(roleId);
+            });
+            return future;
         });
     }
 

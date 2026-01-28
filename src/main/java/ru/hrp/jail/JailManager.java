@@ -1,4 +1,4 @@
-package ru.hrp.crime;
+package ru.hrp.jail;
 
 import ru.hrp.core.DatabaseService;
 
@@ -9,17 +9,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JailManager implements JailService {
     private final Logger logger;
     private final DatabaseService databaseService;
+    private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, JailState> jailCache = new ConcurrentHashMap<>();
 
-    public JailManager(Logger logger, DatabaseService databaseService) {
+    public JailManager(Logger logger, DatabaseService databaseService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
+        this.syncExecutor = syncExecutor;
     }
 
     @Override
@@ -37,11 +40,15 @@ public class JailManager implements JailService {
                 logger.log(Level.SEVERE, "Failed to load jail state for " + uuid, e);
             }
             return null;
-        }).thenApply(state -> {
-            if (state != null) {
-                jailCache.put(uuid, state);
-            }
-            return state;
+        }).thenCompose(state -> {
+            CompletableFuture<JailState> future = new CompletableFuture<>();
+            syncExecutor.accept(() -> {
+                if (state != null) {
+                    jailCache.put(uuid, state);
+                }
+                future.complete(state);
+            });
+            return future;
         });
     }
 

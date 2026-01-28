@@ -1,4 +1,4 @@
-package ru.hrp.crime;
+package ru.hrp.jail;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

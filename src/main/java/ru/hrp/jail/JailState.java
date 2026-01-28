@@ -1,4 +1,4 @@
-package ru.hrp.crime;
+package ru.hrp.jail;
 
 import java.util.UUID;
 
