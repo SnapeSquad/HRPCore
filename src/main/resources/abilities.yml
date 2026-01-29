@@ -5,3 +5,24 @@ TEMPLATE_ABILITY:
   type: ACTIVE
   trigger: MANUAL
   cooldown: 10
+
+CITIZEN_WORK:
+  name: "Work"
+  description: "Perform manual labor to earn some money."
+  type: ACTIVE
+  trigger: MANUAL
+  cooldown: 60
+
+POLICE_ARREST:
+  name: "Arrest"
+  description: "Arrest a nearby criminal."
+  type: ACTIVE
+  trigger: MANUAL
+  cooldown: 30
+
+MEDIC_REVIVE:
+  name: "Revive"
+  description: "Revive a player in critical condition."
+  type: ACTIVE
+  trigger: MANUAL
+  cooldown: 15

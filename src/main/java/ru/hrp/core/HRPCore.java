@@ -110,6 +110,7 @@ public final class HRPCore extends JavaPlugin {
             // 8. Initialize Ability Service
             this.cooldownService = new CooldownManager();
             this.abilityService = new AbilityManager(getLogger(), configService, cooldownService, roleService, talentService);
+            registerAbilities();
             this.abilityService.loadDefinitions();
 
             // 9. Initialize Crime & Jail Services
@@ -141,21 +142,7 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 12. Initialize GUI Service
-            this.guiService = new GuiManager(
-                playerDataService,
-                roleService,
-                talentService,
-                economyService,
-                bankService,
-                crimeService,
-                jailService,
-                medicalService,
-                messageService,
-                configService
-            );
-
-            // 13. Initialize Player Data Service
+            // 12. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -169,9 +156,23 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
+            // 13. Initialize GUI Service
+            this.guiService = new GuiManager(
+                playerDataService,
+                roleService,
+                talentService,
+                economyService,
+                bankService,
+                crimeService,
+                jailService,
+                medicalService,
+                messageService,
+                configService
+            );
+
             // 14. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
-            getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, cardFactory), this);
+            getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, roleService, cardFactory), this);
             getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
             getServer().getPluginManager().registerEvents(new MedicalListener(medicalService), this);
             getServer().getPluginManager().registerEvents(new GuiListener(guiService), this);
@@ -282,6 +283,12 @@ public final class HRPCore extends JavaPlugin {
 
     public GuiService getGuiService() {
         return guiService;
+    }
+
+    private void registerAbilities() {
+        abilityService.registerExecutor("CITIZEN_WORK", new ru.hrp.roles.CitizenWorkExecutor(economyService, talentService));
+        abilityService.registerExecutor("POLICE_ARREST", new ru.hrp.roles.PoliceArrestExecutor(crimeService, jailService));
+        abilityService.registerExecutor("MEDIC_REVIVE", new ru.hrp.roles.MedicReviveExecutor(medicalService));
     }
 
     private void startPayDayTask() {

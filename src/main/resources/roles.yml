@@ -6,3 +6,27 @@ TEMPLATE:
     - "<gray>Used for system testing.</gray>"
   abilities:
     - "TEMPLATE_ABILITY"
+
+CITIZEN:
+  name: "<green>Citizen Card</green>"
+  description:
+    - "<gray>A law-abiding citizen.</gray>"
+    - "<gray>Can perform basic work.</gray>"
+  abilities:
+    - "CITIZEN_WORK"
+
+POLICE:
+  name: "<blue>Police ID</blue>"
+  description:
+    - "<gray>Law enforcement officer.</gray>"
+    - "<gray>Responsible for arresting criminals.</gray>"
+  abilities:
+    - "POLICE_ARREST"
+
+MEDIC:
+  name: "<red>Medic ID</red>"
+  description:
+    - "<gray>Medical professional.</gray>"
+    - "<gray>Responsible for reviving players.</gray>"
+  abilities:
+    - "MEDIC_REVIVE"
