@@ -28,3 +28,14 @@ gui:
     title: "<blue>Bank & Credits</blue>"
   common:
     back: "<red>Back</red>"
+
+admin:
+  player_not_found: "<red>Player not found or offline!</red>"
+  invalid_amount: "<red>Invalid amount!</red>"
+  money_updated: "<green>Updated balance for <yellow><player></yellow> to <gold>$<amount></gold>.</green>"
+  role_updated: "<green>Updated role for <yellow><player></yellow> to <gold><role></gold>.</green>"
+  talent_updated: "<green>Updated talent <yellow><talent></yellow> for <yellow><player></yellow> to level <gold><level></gold>.</green>"
+  jailed: "<green>Jailed <yellow><player></yellow> for <gold><time></gold> seconds.</green>"
+  released: "<green>Released <yellow><player></yellow> from jail.</green>"
+  crime_added: "<green>Added crime <yellow><crime></yellow> to <yellow><player></yellow>.</green>"
+  bank_updated: "<green>Updated bank balance for <yellow><player></yellow> to <gold>$<amount></gold>.</green>"

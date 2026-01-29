@@ -6,3 +6,8 @@ depend: [Vault]
 softdepend: [PlaceholderAPI]
 authors: [HRPCoreTeam]
 description: A modular Minecraft Paper plugin.
+
+commands:
+  hrp:
+    description: Main command for HRPCore.
+    usage: /hrp admin

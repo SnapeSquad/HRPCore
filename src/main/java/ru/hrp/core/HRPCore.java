@@ -26,6 +26,15 @@ import ru.hrp.jail.JailManager;
 import ru.hrp.jail.JailService;
 import ru.hrp.bank.BankManager;
 import ru.hrp.bank.BankService;
+import ru.hrp.core.commands.AdminBankCommand;
+import ru.hrp.core.commands.AdminCommandDispatcher;
+import ru.hrp.core.commands.AdminJailCommand;
+import ru.hrp.core.commands.AdminMedicalCommand;
+import ru.hrp.core.commands.AdminMoneyCommand;
+import ru.hrp.core.commands.AdminRoleCommand;
+import ru.hrp.core.commands.AdminStatusCommand;
+import ru.hrp.core.commands.AdminTalentCommand;
+import ru.hrp.core.commands.HrpCommand;
 import ru.hrp.gui.GuiListener;
 import ru.hrp.gui.GuiManager;
 import ru.hrp.gui.GuiService;
@@ -170,7 +179,10 @@ public final class HRPCore extends JavaPlugin {
                 configService
             );
 
-            // 14. Register Listeners
+            // 14. Register Commands
+            registerCommands();
+
+            // 15. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, roleService, cardFactory), this);
             getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
@@ -283,6 +295,30 @@ public final class HRPCore extends JavaPlugin {
 
     public GuiService getGuiService() {
         return guiService;
+    }
+
+    private void registerCommands() {
+        HrpCommand root = new HrpCommand(messageService);
+        AdminCommandDispatcher admin = new AdminCommandDispatcher(messageService);
+
+        admin.registerSubCommand("money", new AdminMoneyCommand(economyService, messageService));
+        admin.registerSubCommand("role", new AdminRoleCommand(roleService, messageService));
+        admin.registerSubCommand("talent", new AdminTalentCommand(talentService, messageService));
+        admin.registerSubCommand("jail", new AdminJailCommand(jailService, crimeService, messageService, "jail", "hrp.admin.jail"));
+        admin.registerSubCommand("release", new AdminJailCommand(jailService, crimeService, messageService, "release", "hrp.admin.jail"));
+        admin.registerSubCommand("crime", new AdminJailCommand(jailService, crimeService, messageService, "crime", "hrp.admin.crime"));
+        admin.registerSubCommand("bank", new AdminBankCommand(bankService, messageService));
+        admin.registerSubCommand("medical", new AdminMedicalCommand(medicalService, messageService, "medical"));
+        admin.registerSubCommand("revive", new AdminMedicalCommand(medicalService, messageService, "revive"));
+        admin.registerSubCommand("kill", new AdminMedicalCommand(medicalService, messageService, "kill"));
+        admin.registerSubCommand("status", new AdminStatusCommand(guiService, messageService));
+
+        root.registerRoute("admin", admin);
+
+        var cmd = getCommand("hrp");
+        if (cmd != null) {
+            cmd.setExecutor(root);
+        }
     }
 
     private void registerAbilities() {

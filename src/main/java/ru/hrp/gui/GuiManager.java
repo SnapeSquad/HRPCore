@@ -62,18 +62,18 @@ public class GuiManager implements GuiService {
     }
 
     @Override
-    public void openGui(Player player, GuiType type) {
+    public void openGui(Player viewer, GuiType type, Player target) {
         Inventory inv = switch (type) {
-            case STATUS -> createStatusGui(player);
-            case ROLE -> createRoleGui(player);
-            case TALENT -> createTalentGui(player);
-            case BANK -> createBankGui(player);
+            case STATUS -> createStatusGui(target);
+            case ROLE -> createRoleGui(target);
+            case TALENT -> createTalentGui(target);
+            case BANK -> createBankGui(target);
         };
-        player.openInventory(inv);
+        viewer.openInventory(inv);
     }
 
     private Inventory createStatusGui(Player player) {
-        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.STATUS), 27, messageService.parse("gui.status.title"));
+        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.STATUS, player.getUniqueId()), 27, messageService.parse("gui.status.title"));
         UUID uuid = player.getUniqueId();
 
         // 1. Role Item
@@ -109,7 +109,7 @@ public class GuiManager implements GuiService {
     }
 
     private Inventory createRoleGui(Player player) {
-        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.ROLE), 27, messageService.parse("gui.role.title"));
+        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.ROLE, player.getUniqueId()), 27, messageService.parse("gui.role.title"));
         UUID uuid = player.getUniqueId();
 
         RoleId roleId = roleService.getActiveRoleId(uuid);
@@ -132,7 +132,7 @@ public class GuiManager implements GuiService {
     }
 
     private Inventory createTalentGui(Player player) {
-        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.TALENT), 27, messageService.parse("gui.talent.title"));
+        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.TALENT, player.getUniqueId()), 27, messageService.parse("gui.talent.title"));
         UUID uuid = player.getUniqueId();
 
         Map<TalentId, Integer> talents = talentService.getTalents(uuid);
@@ -155,7 +155,7 @@ public class GuiManager implements GuiService {
     }
 
     private Inventory createBankGui(Player player) {
-        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.BANK), 27, messageService.parse("gui.bank.title"));
+        Inventory inv = Bukkit.createInventory(new HrpGuiHolder(GuiType.BANK, player.getUniqueId()), 27, messageService.parse("gui.bank.title"));
         UUID uuid = player.getUniqueId();
 
         inv.setItem(11, createDisplayItem(Material.GOLD_INGOT, "<gold>Bank Balance</gold>",
@@ -203,8 +203,13 @@ public class GuiManager implements GuiService {
     // Custom InventoryHolder to identify our GUIs
     public static class HrpGuiHolder implements InventoryHolder {
         private final GuiType type;
-        public HrpGuiHolder(GuiType type) { this.type = type; }
+        private final UUID targetUuid;
+        public HrpGuiHolder(GuiType type, UUID targetUuid) {
+            this.type = type;
+            this.targetUuid = targetUuid;
+        }
         @Override public Inventory getInventory() { return null; }
         public GuiType getType() { return type; }
+        public UUID getTargetUuid() { return targetUuid; }
     }
 }

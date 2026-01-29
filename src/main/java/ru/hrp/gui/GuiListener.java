@@ -1,10 +1,13 @@
 package ru.hrp.gui;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.InventoryHolder;
+
+import java.util.UUID;
 
 public class GuiListener implements Listener {
     private final GuiService guiService;
@@ -21,23 +24,29 @@ public class GuiListener implements Listener {
         }
 
         event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
+        Player viewer = (Player) event.getWhoClicked();
 
         int slot = event.getRawSlot();
         GuiType type = hrpHolder.getType();
+        UUID targetUuid = hrpHolder.getTargetUuid();
+        Player target = Bukkit.getPlayer(targetUuid);
+        if (target == null) {
+            viewer.closeInventory();
+            return;
+        }
 
         // 1. Check for "Back" button (Slot 22)
         if (slot == 22 && type != GuiType.STATUS) {
-            guiService.openGui(player, GuiType.STATUS);
+            guiService.openGui(viewer, GuiType.STATUS, target);
             return;
         }
 
         // 2. Main Menu Navigation
         if (type == GuiType.STATUS) {
             switch (slot) {
-                case 10 -> guiService.openGui(player, GuiType.ROLE);
-                case 11 -> guiService.openGui(player, GuiType.TALENT);
-                case 12 -> guiService.openGui(player, GuiType.BANK);
+                case 10 -> guiService.openGui(viewer, GuiType.ROLE, target);
+                case 11 -> guiService.openGui(viewer, GuiType.TALENT, target);
+                case 12 -> guiService.openGui(viewer, GuiType.BANK, target);
             }
         }
     }
