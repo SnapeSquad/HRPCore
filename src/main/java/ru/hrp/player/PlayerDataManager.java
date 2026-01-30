@@ -9,6 +9,8 @@ import ru.hrp.crime.CrimeRecord;
 import ru.hrp.crime.CrimeService;
 import ru.hrp.jail.JailService;
 import ru.hrp.jail.JailState;
+import ru.hrp.government.FactionId;
+import ru.hrp.government.FactionService;
 import ru.hrp.jobs.JobService;
 import ru.hrp.medical.MedicalData;
 import ru.hrp.medical.MedicalService;
@@ -43,10 +45,11 @@ public class PlayerDataManager implements PlayerDataService {
     private final BankService bankService;
     private final MedicalService medicalService;
     private final JobService jobService;
+    private final FactionService factionService;
     private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, RPPlayer> cache = new ConcurrentHashMap<>();
 
-    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, TalentService talentService, CrimeService crimeService, JailService jailService, BankService bankService, MedicalService medicalService, JobService jobService, Consumer<Runnable> syncExecutor) {
+    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, TalentService talentService, CrimeService crimeService, JailService jailService, BankService bankService, MedicalService medicalService, JobService jobService, FactionService factionService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.economyService = economyService;
@@ -57,6 +60,7 @@ public class PlayerDataManager implements PlayerDataService {
         this.bankService = bankService;
         this.medicalService = medicalService;
         this.jobService = jobService;
+        this.factionService = factionService;
         this.syncExecutor = syncExecutor;
     }
 
@@ -72,6 +76,8 @@ public class PlayerDataManager implements PlayerDataService {
         CompletableFuture<List<ru.hrp.bank.CreditRecord>> creditsFuture = bankService.loadCredits(uuid);
         CompletableFuture<MedicalData> medicalFuture = medicalService.loadMedicalData(uuid);
         CompletableFuture<ru.hrp.jobs.JobId> jobFuture = jobService.loadJob(uuid);
+        CompletableFuture<FactionId> factionFuture = factionService.loadFaction(uuid);
+        CompletableFuture<String> rankFuture = factionService.loadRank(uuid);
 
         CompletableFuture<RPPlayer> dbFuture = databaseService.queryAsync(connection -> {
             String sql = "SELECT * FROM players WHERE uuid = ?";
@@ -95,7 +101,7 @@ public class PlayerDataManager implements PlayerDataService {
             return null;
         });
 
-        return CompletableFuture.allOf(econFuture, roleFuture, talentFuture, crimeFuture, jailFuture, bankFuture, creditsFuture, medicalFuture, jobFuture, dbFuture).thenCompose(v -> {
+        return CompletableFuture.allOf(econFuture, roleFuture, talentFuture, crimeFuture, jailFuture, bankFuture, creditsFuture, medicalFuture, jobFuture, factionFuture, rankFuture, dbFuture).thenCompose(v -> {
             RPPlayer player = dbFuture.join();
             CompletableFuture<RPPlayer> future = new CompletableFuture<>();
 
@@ -152,6 +158,7 @@ public class PlayerDataManager implements PlayerDataService {
         bankService.unloadCredits(uuid);
         medicalService.unloadMedicalData(uuid);
         jobService.unloadJob(uuid);
+        factionService.unloadFaction(uuid);
     }
 
     @Override

@@ -51,7 +51,10 @@ import ru.hrp.player.PlayerListener;
 import ru.hrp.jobs.JobService;
 import ru.hrp.jobs.JobManager;
 import ru.hrp.jobs.JobListener;
+import ru.hrp.government.FactionService;
+import ru.hrp.government.FactionManager;
 import ru.hrp.core.commands.AdminJobCommand;
+import ru.hrp.core.commands.AdminFactionCommand;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -71,6 +74,7 @@ public final class HRPCore extends JavaPlugin {
     private BankService bankService;
     private MedicalService medicalService;
     private JobService jobService;
+    private FactionService factionService;
     private GuiService guiService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
@@ -167,7 +171,14 @@ public final class HRPCore extends JavaPlugin {
             );
             this.jobService.loadDefinitions();
 
-            // 13. Initialize Player Data Service
+            // 13. Initialize Faction Service
+            this.factionService = new FactionManager(
+                getLogger(),
+                databaseService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
+
+            // 14. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -179,10 +190,11 @@ public final class HRPCore extends JavaPlugin {
                 bankService,
                 medicalService,
                 jobService,
+                factionService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 14. Initialize GUI Service
+            // 15. Initialize GUI Service
             this.guiService = new GuiManager(
                 playerDataService,
                 roleService,
@@ -197,10 +209,10 @@ public final class HRPCore extends JavaPlugin {
                 configService
             );
 
-            // 15. Register Commands
+            // 16. Register Commands
             registerCommands();
 
-            // 16. Register Listeners
+            // 17. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, roleService, cardFactory), this);
             getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
@@ -251,6 +263,9 @@ public final class HRPCore extends JavaPlugin {
         }
         if (jobService != null) {
             jobService.saveAll();
+        }
+        if (factionService != null) {
+            factionService.saveAll();
         }
 
         if (databaseService != null) {
@@ -319,6 +334,10 @@ public final class HRPCore extends JavaPlugin {
         return jobService;
     }
 
+    public FactionService getFactionService() {
+        return factionService;
+    }
+
     public GuiService getGuiService() {
         return guiService;
     }
@@ -338,6 +357,7 @@ public final class HRPCore extends JavaPlugin {
         admin.registerSubCommand("revive", new AdminMedicalCommand(medicalService, messageService, "revive"));
         admin.registerSubCommand("kill", new AdminMedicalCommand(medicalService, messageService, "kill"));
         admin.registerSubCommand("job", new AdminJobCommand(jobService, messageService));
+        admin.registerSubCommand("faction", new AdminFactionCommand(factionService, messageService));
         admin.registerSubCommand("status", new AdminStatusCommand(guiService, messageService));
 
         root.registerRoute("admin", admin);
@@ -349,8 +369,8 @@ public final class HRPCore extends JavaPlugin {
     }
 
     private void registerAbilities() {
-        abilityService.registerExecutor("POLICE_ARREST", new ru.hrp.roles.PoliceArrestExecutor(crimeService, jailService));
-        abilityService.registerExecutor("MEDIC_REVIVE", new ru.hrp.roles.MedicReviveExecutor(medicalService));
+        abilityService.registerExecutor("POLICE_ARREST", new ru.hrp.roles.PoliceArrestExecutor(crimeService, jailService, factionService));
+        abilityService.registerExecutor("MEDIC_REVIVE", new ru.hrp.roles.MedicReviveExecutor(medicalService, factionService));
     }
 
     private void startPayDayTask() {

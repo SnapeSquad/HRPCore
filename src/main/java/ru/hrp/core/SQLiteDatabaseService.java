@@ -123,6 +123,13 @@ public class SQLiteDatabaseService implements DatabaseService {
                     level INTEGER NOT NULL
                 );
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS player_factions (
+                    uuid TEXT PRIMARY KEY,
+                    faction_id TEXT NOT NULL,
+                    rank TEXT NOT NULL
+                );
+            """);
         }
     }
 

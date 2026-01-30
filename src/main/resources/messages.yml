@@ -50,4 +50,14 @@ admin:
     info:
       header: "<blue>Job Info for <player>:</blue>"
       current: "<gray>Current Job: <gold><job></gold></gray>"
+  faction:
+    usage: "<red>Usage: /hrp admin faction <set|clear|info> <player> [faction] [rank]</red>"
+    usage_set: "<red>Usage: /hrp admin faction set <player> <faction> [rank]</red>"
+    invalid_faction: "<red>Invalid Faction ID.</red>"
+    unknown_action: "<red>Unknown faction action. Use set, clear, or info.</red>"
+    cleared: "<green>Cleared faction for <yellow><player></yellow>.</green>"
+    set: "<green>Set faction for <yellow><player></yellow> to <gold><faction></gold> (<gray><rank></gray>).</green>"
+    info:
+      header: "<blue>Faction Info for <player>:</blue>"
+      current: "<gray>Current Faction: <gold><faction></gold> (<gray><rank></gray>)</gray>"
   status_opened: "<green>Opening status GUI for player: <yellow><player></yellow></green>"
