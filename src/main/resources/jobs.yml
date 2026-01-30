@@ -1,0 +1,31 @@
+# HRPCore Job Definitions
+MINER:
+  name: "Miner"
+  rewards:
+    "COAL_ORE": 2.50
+    "DEEPSLATE_COAL_ORE": 2.50
+    "IRON_ORE": 5.00
+    "DEEPSLATE_IRON_ORE": 5.00
+    "GOLD_ORE": 10.00
+    "DEEPSLATE_GOLD_ORE": 10.00
+    "DIAMOND_ORE": 50.00
+    "DEEPSLATE_DIAMOND_ORE": 50.00
+
+FARMER:
+  name: "Farmer"
+  rewards:
+    "WHEAT": 1.50
+    "CARROTS": 1.50
+    "POTATOES": 1.50
+    "PUMPKIN": 2.00
+    "MELON": 2.00
+
+LUMBERJACK:
+  name: "Lumberjack"
+  rewards:
+    "OAK_LOG": 2.00
+    "SPRUCE_LOG": 2.00
+    "BIRCH_LOG": 2.00
+    "JUNGLE_LOG": 2.00
+    "ACACIA_LOG": 2.00
+    "DARK_OAK_LOG": 2.00

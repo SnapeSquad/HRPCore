@@ -11,4 +11,5 @@ public interface ConfigService {
     FileConfiguration getAbilities();
     FileConfiguration getTalents();
     FileConfiguration getCrimes();
+    FileConfiguration getJobs();
 }

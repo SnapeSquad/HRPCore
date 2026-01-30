@@ -48,6 +48,10 @@ import ru.hrp.talents.TalentService;
 import ru.hrp.player.PlayerDataManager;
 import ru.hrp.player.PlayerDataService;
 import ru.hrp.player.PlayerListener;
+import ru.hrp.jobs.JobService;
+import ru.hrp.jobs.JobManager;
+import ru.hrp.jobs.JobListener;
+import ru.hrp.core.commands.AdminJobCommand;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -66,6 +70,7 @@ public final class HRPCore extends JavaPlugin {
     private JailService jailService;
     private BankService bankService;
     private MedicalService medicalService;
+    private JobService jobService;
     private GuiService guiService;
     private PlayerDataService playerDataService;
     private BukkitTask payDayTask;
@@ -151,7 +156,18 @@ public final class HRPCore extends JavaPlugin {
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 12. Initialize Player Data Service
+            // 12. Initialize Job Service
+            this.jobService = new JobManager(
+                getLogger(),
+                databaseService,
+                economyService,
+                talentService,
+                configService,
+                runnable -> getServer().getScheduler().runTask(this, runnable)
+            );
+            this.jobService.loadDefinitions();
+
+            // 13. Initialize Player Data Service
             this.playerDataService = new PlayerDataManager(
                 getLogger(),
                 databaseService,
@@ -162,10 +178,11 @@ public final class HRPCore extends JavaPlugin {
                 jailService,
                 bankService,
                 medicalService,
+                jobService,
                 runnable -> getServer().getScheduler().runTask(this, runnable)
             );
 
-            // 13. Initialize GUI Service
+            // 14. Initialize GUI Service
             this.guiService = new GuiManager(
                 playerDataService,
                 roleService,
@@ -175,19 +192,21 @@ public final class HRPCore extends JavaPlugin {
                 crimeService,
                 jailService,
                 medicalService,
+                jobService,
                 messageService,
                 configService
             );
 
-            // 14. Register Commands
+            // 15. Register Commands
             registerCommands();
 
-            // 15. Register Listeners
+            // 16. Register Listeners
             getServer().getPluginManager().registerEvents(new PlayerListener(playerDataService, messageService), this);
             getServer().getPluginManager().registerEvents(new AbilityBridge(abilityService, roleService, cardFactory), this);
             getServer().getPluginManager().registerEvents(new JailListener(jailService, configService, getLogger()), this);
             getServer().getPluginManager().registerEvents(new MedicalListener(medicalService), this);
             getServer().getPluginManager().registerEvents(new GuiListener(guiService), this);
+            getServer().getPluginManager().registerEvents(new JobListener(jobService), this);
 
             getLogger().info("HRPCore has been enabled successfully!");
         } catch (SQLException e) {
@@ -229,6 +248,9 @@ public final class HRPCore extends JavaPlugin {
         }
         if (medicalService != null) {
             medicalService.saveAll();
+        }
+        if (jobService != null) {
+            jobService.saveAll();
         }
 
         if (databaseService != null) {
@@ -293,6 +315,10 @@ public final class HRPCore extends JavaPlugin {
         return medicalService;
     }
 
+    public JobService getJobService() {
+        return jobService;
+    }
+
     public GuiService getGuiService() {
         return guiService;
     }
@@ -311,6 +337,7 @@ public final class HRPCore extends JavaPlugin {
         admin.registerSubCommand("medical", new AdminMedicalCommand(medicalService, messageService, "medical"));
         admin.registerSubCommand("revive", new AdminMedicalCommand(medicalService, messageService, "revive"));
         admin.registerSubCommand("kill", new AdminMedicalCommand(medicalService, messageService, "kill"));
+        admin.registerSubCommand("job", new AdminJobCommand(jobService, messageService));
         admin.registerSubCommand("status", new AdminStatusCommand(guiService, messageService));
 
         root.registerRoute("admin", admin);
@@ -322,7 +349,6 @@ public final class HRPCore extends JavaPlugin {
     }
 
     private void registerAbilities() {
-        abilityService.registerExecutor("CITIZEN_WORK", new ru.hrp.roles.CitizenWorkExecutor(economyService, talentService));
         abilityService.registerExecutor("POLICE_ARREST", new ru.hrp.roles.PoliceArrestExecutor(crimeService, jailService));
         abilityService.registerExecutor("MEDIC_REVIVE", new ru.hrp.roles.MedicReviveExecutor(medicalService));
     }

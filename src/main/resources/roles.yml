@@ -11,9 +11,7 @@ CITIZEN:
   name: "<green>Citizen Card</green>"
   description:
     - "<gray>A law-abiding citizen.</gray>"
-    - "<gray>Can perform basic work.</gray>"
-  abilities:
-    - "CITIZEN_WORK"
+  abilities: []
 
 POLICE:
   name: "<blue>Police ID</blue>"

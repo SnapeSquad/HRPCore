@@ -9,6 +9,7 @@ import ru.hrp.crime.CrimeRecord;
 import ru.hrp.crime.CrimeService;
 import ru.hrp.jail.JailService;
 import ru.hrp.jail.JailState;
+import ru.hrp.jobs.JobService;
 import ru.hrp.medical.MedicalData;
 import ru.hrp.medical.MedicalService;
 import ru.hrp.economy.EconomyService;
@@ -41,10 +42,11 @@ public class PlayerDataManager implements PlayerDataService {
     private final JailService jailService;
     private final BankService bankService;
     private final MedicalService medicalService;
+    private final JobService jobService;
     private final Consumer<Runnable> syncExecutor;
     private final Map<UUID, RPPlayer> cache = new ConcurrentHashMap<>();
 
-    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, TalentService talentService, CrimeService crimeService, JailService jailService, BankService bankService, MedicalService medicalService, Consumer<Runnable> syncExecutor) {
+    public PlayerDataManager(Logger logger, DatabaseService databaseService, EconomyService economyService, RoleService roleService, TalentService talentService, CrimeService crimeService, JailService jailService, BankService bankService, MedicalService medicalService, JobService jobService, Consumer<Runnable> syncExecutor) {
         this.logger = logger;
         this.databaseService = databaseService;
         this.economyService = economyService;
@@ -54,6 +56,7 @@ public class PlayerDataManager implements PlayerDataService {
         this.jailService = jailService;
         this.bankService = bankService;
         this.medicalService = medicalService;
+        this.jobService = jobService;
         this.syncExecutor = syncExecutor;
     }
 
@@ -68,6 +71,7 @@ public class PlayerDataManager implements PlayerDataService {
         CompletableFuture<BigDecimal> bankFuture = bankService.loadAccount(uuid);
         CompletableFuture<List<ru.hrp.bank.CreditRecord>> creditsFuture = bankService.loadCredits(uuid);
         CompletableFuture<MedicalData> medicalFuture = medicalService.loadMedicalData(uuid);
+        CompletableFuture<ru.hrp.jobs.JobId> jobFuture = jobService.loadJob(uuid);
 
         CompletableFuture<RPPlayer> dbFuture = databaseService.queryAsync(connection -> {
             String sql = "SELECT * FROM players WHERE uuid = ?";
@@ -81,7 +85,6 @@ public class PlayerDataManager implements PlayerDataService {
                             rs.getLong("first_join"),
                             rs.getLong("last_seen"),
                             RoleId.NONE,      // Placeholder
-                            "NONE",           // Placeholder
                             Collections.emptyMap() // Placeholder
                         );
                     }
@@ -92,7 +95,7 @@ public class PlayerDataManager implements PlayerDataService {
             return null;
         });
 
-        return CompletableFuture.allOf(econFuture, roleFuture, talentFuture, crimeFuture, jailFuture, bankFuture, creditsFuture, medicalFuture, dbFuture).thenCompose(v -> {
+        return CompletableFuture.allOf(econFuture, roleFuture, talentFuture, crimeFuture, jailFuture, bankFuture, creditsFuture, medicalFuture, jobFuture, dbFuture).thenCompose(v -> {
             RPPlayer player = dbFuture.join();
             CompletableFuture<RPPlayer> future = new CompletableFuture<>();
 
@@ -108,7 +111,6 @@ public class PlayerDataManager implements PlayerDataService {
                         now,
                         now,
                         roleFuture.join(),
-                        "NONE",
                         talentFuture.join()
                     );
                 } else {
@@ -119,7 +121,6 @@ public class PlayerDataManager implements PlayerDataService {
                         player.firstJoin(),
                         now,
                         roleFuture.join(),
-                        player.job(),
                         talentFuture.join()
                     );
                 }
@@ -150,6 +151,7 @@ public class PlayerDataManager implements PlayerDataService {
         bankService.unloadAccount(uuid);
         bankService.unloadCredits(uuid);
         medicalService.unloadMedicalData(uuid);
+        jobService.unloadJob(uuid);
     }
 
     @Override

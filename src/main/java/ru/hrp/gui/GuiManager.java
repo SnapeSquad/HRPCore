@@ -17,6 +17,8 @@ import ru.hrp.crime.CrimeRecord;
 import ru.hrp.crime.CrimeService;
 import ru.hrp.jail.JailService;
 import ru.hrp.medical.MedicalData;
+import ru.hrp.jobs.JobId;
+import ru.hrp.jobs.JobService;
 import ru.hrp.medical.MedicalService;
 import ru.hrp.medical.MedicalState;
 import ru.hrp.player.RPPlayer;
@@ -42,13 +44,14 @@ public class GuiManager implements GuiService {
     private final CrimeService crimeService;
     private final JailService jailService;
     private final MedicalService medicalService;
+    private final JobService jobService;
     private final MessageService messageService;
     private final ConfigService configService;
 
     public GuiManager(PlayerDataService playerDataService, RoleService roleService, TalentService talentService,
                       EconomyService economyService, BankService bankService, CrimeService crimeService,
-                      JailService jailService, MedicalService medicalService, MessageService messageService,
-                      ConfigService configService) {
+                      JailService jailService, MedicalService medicalService, JobService jobService,
+                      MessageService messageService, ConfigService configService) {
         this.playerDataService = playerDataService;
         this.roleService = roleService;
         this.talentService = talentService;
@@ -57,6 +60,7 @@ public class GuiManager implements GuiService {
         this.crimeService = crimeService;
         this.jailService = jailService;
         this.medicalService = medicalService;
+        this.jobService = jobService;
         this.messageService = messageService;
         this.configService = configService;
     }
@@ -104,6 +108,11 @@ public class GuiManager implements GuiService {
         boolean jailed = jailService.isJailed(uuid);
         inv.setItem(15, createDisplayItem(Material.IRON_BARS, "gui.status.item_jail",
             List.of("<gray>Jail Status: <red>" + (jailed ? "Jailed" : "Free") + "</red>")));
+
+        // 6. Job Item
+        JobId jobId = jobService.getJob(uuid);
+        inv.setItem(16, createDisplayItem(Material.IRON_PICKAXE, "gui.status.item_job",
+            List.of("<gray>Current Job: <yellow>" + jobId.name() + "</yellow>")));
 
         return inv;
     }

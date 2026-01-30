@@ -19,12 +19,14 @@ public class ConfigManager implements ConfigService {
     private FileConfiguration abilities;
     private FileConfiguration talents;
     private FileConfiguration crimes;
+    private FileConfiguration jobs;
     private File configFile;
     private File messagesFile;
     private File rolesFile;
     private File abilitiesFile;
     private File talentsFile;
     private File crimesFile;
+    private File jobsFile;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -34,6 +36,7 @@ public class ConfigManager implements ConfigService {
         this.abilitiesFile = new File(plugin.getDataFolder(), "abilities.yml");
         this.talentsFile = new File(plugin.getDataFolder(), "talents.yml");
         this.crimesFile = new File(plugin.getDataFolder(), "crimes.yml");
+        this.jobsFile = new File(plugin.getDataFolder(), "jobs.yml");
     }
 
     @Override
@@ -48,6 +51,7 @@ public class ConfigManager implements ConfigService {
         saveDefaultConfig("abilities.yml");
         saveDefaultConfig("talents.yml");
         saveDefaultConfig("crimes.yml");
+        saveDefaultConfig("jobs.yml");
 
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
@@ -55,6 +59,7 @@ public class ConfigManager implements ConfigService {
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
         talents = YamlConfiguration.loadConfiguration(talentsFile);
         crimes = YamlConfiguration.loadConfiguration(crimesFile);
+        jobs = YamlConfiguration.loadConfiguration(jobsFile);
 
         loadDefaults("messages.yml", messages);
     }
@@ -81,6 +86,7 @@ public class ConfigManager implements ConfigService {
         abilities = YamlConfiguration.loadConfiguration(abilitiesFile);
         talents = YamlConfiguration.loadConfiguration(talentsFile);
         crimes = YamlConfiguration.loadConfiguration(crimesFile);
+        jobs = YamlConfiguration.loadConfiguration(jobsFile);
     }
 
     @Override
@@ -111,5 +117,10 @@ public class ConfigManager implements ConfigService {
     @Override
     public FileConfiguration getCrimes() {
         return crimes;
+    }
+
+    @Override
+    public FileConfiguration getJobs() {
+        return jobs;
     }
 }

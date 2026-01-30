@@ -20,6 +20,7 @@ gui:
     item_bank: "<gold>Bank & Financials</gold>"
     item_medical: "<red>Medical Condition</red>"
     item_jail: "<gray>Legal Status</gray>"
+    item_job: "<yellow>Job Information</yellow>"
   role:
     title: "<blue>Role Information</blue>"
   talent:
@@ -39,3 +40,14 @@ admin:
   released: "<green>Released <yellow><player></yellow> from jail.</green>"
   crime_added: "<green>Added crime <yellow><crime></yellow> to <yellow><player></yellow>.</green>"
   bank_updated: "<green>Updated bank balance for <yellow><player></yellow> to <gold>$<amount></gold>.</green>"
+  job:
+    usage: "<red>Usage: /hrp admin job <set|clear|info> <player> [job]</red>"
+    usage_set: "<red>Usage: /hrp admin job set <player> <job_id></red>"
+    invalid_job: "<red>Invalid Job ID.</red>"
+    unknown_action: "<red>Unknown job action. Use set, clear, or info.</red>"
+    cleared: "<green>Cleared job for <yellow><player></yellow>.</green>"
+    set: "<green>Set job for <yellow><player></yellow> to <gold><job></gold>.</green>"
+    info:
+      header: "<blue>Job Info for <player>:</blue>"
+      current: "<gray>Current Job: <gold><job></gold></gray>"
+  status_opened: "<green>Opening status GUI for player: <yellow><player></yellow></green>"

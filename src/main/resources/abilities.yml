@@ -6,12 +6,6 @@ TEMPLATE_ABILITY:
   trigger: MANUAL
   cooldown: 10
 
-CITIZEN_WORK:
-  name: "Work"
-  description: "Perform manual labor to earn some money."
-  type: ACTIVE
-  trigger: MANUAL
-  cooldown: 60
 
 POLICE_ARREST:
   name: "Arrest"

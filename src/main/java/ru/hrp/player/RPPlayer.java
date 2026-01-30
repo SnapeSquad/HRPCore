@@ -18,7 +18,6 @@ public record RPPlayer(
 
     // Placeholders for future systems
     RoleId role,
-    String job,
     Map<TalentId, Integer> talents
 ) {
     /**
@@ -32,7 +31,6 @@ public record RPPlayer(
             now,
             now,
             RoleId.NONE,
-            "NONE",
             Collections.emptyMap()
         );
     }

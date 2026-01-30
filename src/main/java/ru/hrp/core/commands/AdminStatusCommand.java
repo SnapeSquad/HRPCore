@@ -1,5 +1,6 @@
 package ru.hrp.core.commands;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -36,7 +37,7 @@ public class AdminStatusCommand implements SubCommand {
 
         // Open Status GUI for the admin, but viewing the target's data
         guiService.openGui(player, GuiType.STATUS, target);
-        messageService.sendRawMessage(sender, "<green>Opening status GUI for player: <yellow>" + target.getName() + "</yellow></green>");
+        messageService.sendMessage(sender, "admin.status_opened", Placeholder.unparsed("player", target.getName()));
     }
 
     @Override
